@@ -170,7 +170,7 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
                 border: index === 0 ? '1px solid #fbbf24' : '1px solid #334155',
                 display: 'flex',
                 flexDirection: 'column',
-                justify: 'space-between',
+                justifyContent: 'space-between',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>

@@ -92,7 +92,7 @@ export default function UserSubscriptionTable({ initialUsers }: { initialUsers: 
           margin: '16px 0 20px 0',
           display: 'flex',
           alignItems: 'center',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: 14,
         }}
