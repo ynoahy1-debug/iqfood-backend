@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String            @id @default(uuid())
+  name             String
+  username         String            @unique
+  email            String            @unique
+  password         String?
+  avatar           String?
+  bio              String?
+  instagram        String?
+  isRestaurant     Boolean           @default(false)
+  restaurantId     String?
+  restaurant       Restaurant?       @relation(fields: [restaurantId], references: [id])
+  isSubscribed          Boolean           @default(false)
+  postLimit             Int               @default(5)
+  canPostWithoutApproval Boolean          @default(false)
+  isFrozen         Boolean           @default(false)
+  createdAt             DateTime          @default(now())
+  reviews               Review[]
+  comments              Comment[]
+  likes                 Like[]
+  savedRestaurants      SavedRestaurant[]
+  following             Follows[]         @relation("follower")
+  followers             Follows[]         @relation("following")
+}
+
+model Restaurant {
+  id            String            @id @default(uuid())
+  name          String
+  description   String?
+  category      String // Burger, Pizza, Sushi, Coffee, Steak, Desserts
+  city          String
+  address       String
+  phone         String?           @default("07700000000")
+  workingHours  String?           @default("12:00 م - 12:00 ص")
+  latitude      Float
+  longitude     Float
+  image         String
+  averageRating Float             @default(0.0)
+  isFrozen      Boolean           @default(false)
+  reviews       Review[]
+  savedBy       SavedRestaurant[]
+  users         User[]
+  stories       RestaurantStory[]
+  createdAt     DateTime          @default(now())
+}
+
+model Review {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  type         String     @default("REVIEW") // REVIEW, SUGGESTION, QUESTION
+  rating       Float
+  comment      String
+  image        String?
+  status       String     @default("APPROVED") // PENDING, APPROVED, REJECTED
+  createdAt    DateTime   @default(now())
+  likes        Like[]
+  comments     Comment[]
+}
+
+model RestaurantStory {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  image        String
+  videoUrl     String?
+  caption      String?
+  isHighlight  Boolean    @default(false)
+  highlightTag String?
+  createdAt    DateTime   @default(now())
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reviewId    String?
+  commentId   String?
+  reason      String
+  status      String   @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  createdAt   DateTime @default(now())
+}
+
+model Follows {
+  followerId  String
+  follower    User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}
+
+model Like {
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model SavedRestaurant {
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  type         String // visited, want_to_try, favorite
+
+  @@id([userId, restaurantId, type])
+}
+
+model RestaurantCollection {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  emoji         String   @default("🥗")
+  isPublished   Boolean  @default(true)
+  restaurantIds String   @default("[]")
+  createdAt     DateTime @default(now())
+}
+
+model SystemSettings {
+  id                  String   @id @default("global")
+  autoApproveAllPosts Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
