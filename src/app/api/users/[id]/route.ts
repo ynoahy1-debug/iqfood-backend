@@ -95,6 +95,12 @@ export async function PATCH(
     const dataToUpdate: any = {};
     if (typeof isSubscribed === 'boolean') {
       dataToUpdate.isSubscribed = isSubscribed;
+      if (isSubscribed) {
+        dataToUpdate.postLimit = postLimit ?? 9999;
+        dataToUpdate.canPostWithoutApproval = canPostWithoutApproval ?? true;
+      } else {
+        dataToUpdate.postLimit = postLimit ?? 5;
+      }
     }
     if (typeof postLimit === 'number') {
       dataToUpdate.postLimit = postLimit;
