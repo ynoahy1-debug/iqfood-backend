@@ -62,7 +62,7 @@ export async function GET(
         email: user.email,
         avatar: user.avatar,
         bio: user.bio,
-        instagram: user.instagram ?? 'ahmed_iq',
+        instagram: user.instagram ?? '',
         isSubscribed: user.isSubscribed ?? false,
         postLimit: user.postLimit ?? 5,
         canPostWithoutApproval: (user as any).canPostWithoutApproval ?? false,
@@ -90,7 +90,7 @@ export async function PATCH(
   try {
     const userId = params.id;
     const body = await request.json();
-    const { isSubscribed, postLimit, canPostWithoutApproval, isFrozen, instagram, bio, name, username } = body;
+    const { isSubscribed, postLimit, canPostWithoutApproval, isFrozen, instagram, bio, name, username, avatar } = body;
 
     const dataToUpdate: any = {};
     if (typeof isSubscribed === 'boolean') {
@@ -106,16 +106,19 @@ export async function PATCH(
       dataToUpdate.isFrozen = isFrozen;
     }
     if (typeof instagram === 'string') {
-      dataToUpdate.instagram = instagram;
+      dataToUpdate.instagram = instagram.trim().replace(/^@+/, '');
     }
     if (typeof bio === 'string') {
-      dataToUpdate.bio = bio;
+      dataToUpdate.bio = bio.trim();
     }
     if (typeof name === 'string') {
-      dataToUpdate.name = name;
+      dataToUpdate.name = name.trim();
     }
     if (typeof username === 'string') {
-      dataToUpdate.username = username;
+      dataToUpdate.username = username.trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+    }
+    if (typeof avatar === 'string') {
+      dataToUpdate.avatar = avatar.trim();
     }
 
     const updatedUser = await prisma.user.update({
