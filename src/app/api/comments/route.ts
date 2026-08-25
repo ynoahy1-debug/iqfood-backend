@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { reviewId, userId, text } = body;
+    const { reviewId, userId, userName, userEmail, userAvatar, text } = body;
 
     if (!reviewId || !text) {
       return NextResponse.json(
@@ -16,6 +16,37 @@ export async function POST(request: Request) {
     }
 
     let targetUserId = userId;
+    let user = targetUserId ? await prisma.user.findUnique({ where: { id: targetUserId } }) : null;
+
+    if (!user && userEmail) {
+      const cleanEmail = userEmail.trim().toLowerCase();
+      user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+      if (user) {
+        targetUserId = user.id;
+      }
+    }
+
+    if (!user && (userName || userEmail)) {
+      const cleanEmail = (userEmail || `user_${Date.now()}@iqfood.app`).trim().toLowerCase();
+      const cleanUsername = (cleanEmail.split('@')[0]).toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      
+      try {
+        user = await prisma.user.create({
+          data: {
+            name: userName || 'مستخدم IQFood',
+            email: cleanEmail,
+            username: cleanUsername,
+            avatar: userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+            bio: 'عاشق لتجربة الأكل العراقي والمطاعم 🍔',
+          },
+        });
+        targetUserId = user.id;
+      } catch (err) {
+        user = await prisma.user.findFirst();
+        targetUserId = user?.id;
+      }
+    }
+
     if (!targetUserId) {
       const fallbackUser = await prisma.user.findFirst();
       targetUserId = fallbackUser?.id;

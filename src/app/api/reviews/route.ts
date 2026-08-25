@@ -23,8 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log('📥 New review received from mobile app:', body);
-    const { userId, restaurantId, type = 'REVIEW', rating = 5.0, comment, image } = body;
+    const { userId, userName, userEmail, userUsername, userAvatar, restaurantId, type = 'REVIEW', rating = 5.0, comment, image } = body;
 
     if (!comment) {
       return NextResponse.json({ success: false, error: 'Missing comment field' }, { status: 400 });
@@ -34,9 +33,38 @@ export async function POST(request: Request) {
     const contentCheck = checkContent(comment);
     const sanitizedComment = contentCheck.cleanText;
 
-    // Check user approval permissions
+    // Check user approval permissions & auto-link
     let validUserId = userId;
     let user = validUserId ? await prisma.user.findUnique({ where: { id: validUserId } }) : null;
+
+    if (!user && userEmail) {
+      const cleanEmail = userEmail.trim().toLowerCase();
+      user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+      if (user) {
+        validUserId = user.id;
+      }
+    }
+
+    if (!user && (userName || userEmail)) {
+      const cleanEmail = (userEmail || `user_${Date.now()}@iqfood.app`).trim().toLowerCase();
+      const cleanUsername = (userUsername || userName?.replace(/\s+/g, '_') || `user_${Date.now()}`).trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      
+      try {
+        user = await prisma.user.create({
+          data: {
+            name: userName || 'مستخدم IQFood',
+            email: cleanEmail,
+            username: cleanUsername,
+            avatar: userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+            bio: 'عاشق لتجربة الأكل العراقي والمطاعم 🍔',
+          },
+        });
+        validUserId = user.id;
+      } catch (err) {
+        user = await prisma.user.findFirst();
+        validUserId = user?.id;
+      }
+    }
 
     if (!user) {
       const firstUser = await prisma.user.findFirst();
