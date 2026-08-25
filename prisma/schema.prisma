@@ -30,6 +30,7 @@ model User {
   comments              Comment[]
   likes                 Like[]
   savedRestaurants      SavedRestaurant[]
+  savedPosts            SavedPost[]
   following             Follows[]         @relation("follower")
   followers             Follows[]         @relation("following")
 }
@@ -69,6 +70,7 @@ model Review {
   createdAt    DateTime   @default(now())
   likes        Like[]
   comments     Comment[]
+  savedPosts   SavedPost[]
 }
 
 model RestaurantStory {
@@ -145,4 +147,14 @@ model SystemSettings {
   id                  String   @id @default("global")
   autoApproveAllPosts Boolean  @default(false)
   updatedAt           DateTime @updatedAt
+}
+
+model SavedPost {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, reviewId])
 }

@@ -23,6 +23,7 @@ export async function GET(request: Request) {
         user: true,
         restaurant: true,
         likes: true,
+        savedPosts: true,
         comments: {
           include: { user: true },
           orderBy: { createdAt: 'asc' },
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
 
     const formattedFeed = reviews.map((r) => {
       const isLikedByCurrentUser = userId ? r.likes.some((l) => l.userId === userId) : false;
+      const isSavedByCurrentUser = userId ? (r as any).savedPosts?.some((s: any) => s.userId === userId) ?? false : false;
       return {
         id: r.id,
         type: (r as any).type ?? 'REVIEW',
@@ -58,6 +60,7 @@ export async function GET(request: Request) {
         createdAt: r.createdAt,
         likeCount: r.likes.length,
         isLiked: isLikedByCurrentUser,
+        isSaved: isSavedByCurrentUser,
         comments: r.comments.map((c) => ({
           id: c.id,
           userName: c.user.name,
