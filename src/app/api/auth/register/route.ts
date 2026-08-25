@@ -50,7 +50,7 @@ export async function POST(request: Request) {
  username: cleanUsername,
  email: cleanEmail,
  password: password, // Stored for authentication
- avatar: avatar ||'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+ avatar: avatar && typeof avatar === 'string' && avatar.trim().length > 0 ? avatar.trim() : null,
  bio: bio ||'عاشق لتجربة الأكل العراقي والمطاعم',
  },
  });
