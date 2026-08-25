@@ -43,12 +43,6 @@ export default function Sidebar() {
       badge: 'VIP',
     },
     {
-      label: 'صناع المحتوى والوصفات',
-      icon: '🍳',
-      href: '/recipes',
-      badge: 'أرباح',
-    },
-    {
       label: 'دليل ورصيد المطاعم',
       icon: '🏪',
       href: '/restaurants',
