@@ -51,11 +51,32 @@ export async function DELETE(
 ) {
   try {
     const reviewId = params.id;
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    const existingReview = await prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!existingReview) {
+      return NextResponse.json({ success: false, error: 'المنشور غير موجود' }, { status: 404 });
+    }
+
+    if (userId && existingReview.userId !== userId) {
+      const requester = await prisma.user.findUnique({ where: { id: userId } });
+      const owner = await prisma.user.findUnique({ where: { id: existingReview.userId } });
+      if (!requester || !owner || (requester.email !== owner.email && requester.username !== owner.username)) {
+        return NextResponse.json({ success: false, error: 'غير مصرح لك بحذف هذا المنشور' }, { status: 403 });
+      }
+    }
+
     await prisma.review.delete({
       where: { id: reviewId },
     });
-    return NextResponse.json({ success: true, message: 'Review deleted' });
+
+    return NextResponse.json({ success: true, message: 'تم حذف المنشور بنجاح' });
   } catch (error) {
+    console.error('Error deleting review:', error);
     return NextResponse.json({ success: false, error: 'Failed to delete review' }, { status: 500 });
   }
 }
