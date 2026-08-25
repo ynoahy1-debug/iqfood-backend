@@ -77,10 +77,13 @@ export async function POST(request: Request) {
         postLimit: newUser.postLimit,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in POST /api/auth/complete-signup:', error);
     return NextResponse.json(
-      { success: false, error: 'حدث خطأ في السيرفر أثناء إنشاء الحساب' },
+      {
+        success: false,
+        error: `حدث خطأ في السيرفر أثناء إنشاء الحساب: ${error?.message || error}`,
+      },
       { status: 500 }
     );
   }
