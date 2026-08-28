@@ -14,16 +14,36 @@ export async function GET(request: Request) {
     };
 
     if (category && category !== 'All') {
-      whereClause.category = category;
+      const catRecord = await prisma.category.findFirst({
+        where: {
+          OR: [{ name: category }, { label: category }],
+        },
+      });
+
+      if (catRecord) {
+        whereClause.OR = [
+          { category: { equals: catRecord.name, mode: 'insensitive' } },
+          { category: { equals: catRecord.label, mode: 'insensitive' } },
+        ];
+      } else {
+        whereClause.category = { equals: category, mode: 'insensitive' };
+      }
     }
 
     if (query) {
-      whereClause.OR = [
-        { name: { contains: query } },
-        { category: { contains: query } },
-        { city: { contains: query } },
-        { address: { contains: query } },
+      const queryFilter = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { category: { contains: query, mode: 'insensitive' } },
+        { city: { contains: query, mode: 'insensitive' } },
+        { address: { contains: query, mode: 'insensitive' } },
       ];
+
+      if (whereClause.OR) {
+        whereClause.AND = [{ OR: whereClause.OR }, { OR: queryFilter }];
+        delete whereClause.OR;
+      } else {
+        whereClause.OR = queryFilter;
+      }
     }
 
     const restaurants = await prisma.restaurant.findMany({
