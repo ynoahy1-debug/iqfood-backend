@@ -78,15 +78,20 @@ model Review {
 }
 
 model RestaurantStory {
-  id           String     @id @default(uuid())
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  image        String
-  videoUrl     String?
-  caption      String?
-  isHighlight  Boolean    @default(false)
-  highlightTag String?
-  createdAt    DateTime   @default(now())
+  id            String     @id @default(uuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  image         String
+  videoUrl      String?
+  caption       String?
+  durationHours Int        @default(24)
+  expiresAt     DateTime?
+  order         Int        @default(0)
+  isActive      Boolean    @default(true)
+  viewsCount    Int        @default(0)
+  isHighlight   Boolean    @default(false)
+  highlightTag  String?
+  createdAt     DateTime   @default(now())
 }
 
 model Report {

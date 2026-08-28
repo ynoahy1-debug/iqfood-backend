@@ -53,6 +53,12 @@ export default function Sidebar() {
  href: '/categories',
  badge: 'تحكم',
  },
+  {
+    label: 'قصص المطاعم (Stories)',
+    icon: '📸',
+    href: '/stories',
+    badge: 'جديد 24h',
+  },
  {
  label: 'القوائم المخصصة والسلاسل',
  icon: '🥗',
