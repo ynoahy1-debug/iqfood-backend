@@ -43,9 +43,15 @@ export default function Sidebar() {
  badge:'VIP',
  },
  {
- label:'دليل ورصيد المطاعم',
- icon:'',
- href:'/restaurants',
+ label: 'دليل ورصيد المطاعم',
+ icon: '🏪',
+ href: '/restaurants',
+ },
+ {
+ label: 'تصنيفات المطاعم (Categories)',
+ icon: '🏷️',
+ href: '/categories',
+ badge: 'تحكم',
  },
  {
  label: 'القوائم المخصصة والسلاسل',

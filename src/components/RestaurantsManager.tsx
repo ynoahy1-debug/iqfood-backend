@@ -20,6 +20,18 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
  const [restaurants, setRestaurants] = useState<RestaurantItem[]>(initialRestaurants);
  const [loadingId, setLoadingId] = useState<string | null>(null);
  const [showAddModal, setShowAddModal] = useState(false);
+ const [availableCategories, setAvailableCategories] = useState<{ id: string; name: string; label: string; icon: string }[]>([]);
+
+ React.useEffect(() => {
+   fetch('/api/categories')
+     .then((res) => res.json())
+     .then((data) => {
+       if (data.success && Array.isArray(data.data)) {
+         setAvailableCategories(data.data.filter((c: any) => c.name !== 'All'));
+       }
+     })
+     .catch((err) => console.error('Failed to fetch categories', err));
+ }, []);
 
  // New Restaurant Form State
  const [newName, setNewName] = useState('');
@@ -300,13 +312,23 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
  color:'#fff',
  }}
  >
- <option value="Burger"> مطاعم البرغر</option>
- <option value="Pizza"> مطاعم البيتزا</option>
- <option value="Sushi"> السوشي والياباني</option>
- <option value="Coffee"> الكافيهات والقهوة</option>
- <option value="Steak"> الستيك واللحوم</option>
- <option value="Desserts"> الحلويات</option>
- </select>
+ {availableCategories.length > 0 ? (
+                      availableCategories.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.icon} {c.label} ({c.name})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="Burger">🍔 مطاعم البرغر</option>
+                        <option value="Pizza">🍕 مطاعم البيتزا</option>
+                        <option value="Sushi">🍣 السوشي والياباني</option>
+                        <option value="Coffee">☕ الكافيهات والقهوة</option>
+                        <option value="Iraqi">🥩 المشويات والمطابخ العراقية</option>
+                        <option value="Desserts">🍰 الحلويات والكريب</option>
+                      </>
+                    )}
+                  </select>
  </div>
  <div>
  <label style={{ display:'block', fontSize: 13, marginBottom: 4 }}>المدينة:</label>
