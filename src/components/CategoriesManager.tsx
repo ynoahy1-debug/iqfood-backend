@@ -148,42 +148,213 @@ export default function CategoriesManager() {
     }
   };
 
-  const commonEmojis = ['🍔', '🍕', '🍣', '☕', '🥩', '🍰', '🌯', '🥗', '🍩', '🍗', '🥪', '🍜', '🍦', '🍹', '🍽️'];
+  const commonEmojis = ['🍔', '🍕', '🍣', '☕', '🥩', '🍰', '🌯', '🥗', '🍩', '🍗', '🥪', '🍜', '🍦', '🍹', '🍽️', '🥐', '🧁'];
+
+  const totalRestaurants = categories.reduce((acc, curr) => (curr.name !== 'All' ? acc + (curr.restaurantCount || 0) : acc), 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="dashboard-container" style={{ padding: '24px 32px', maxWidth: '1400px', margin: '0 auto' }}>
+      {/* Header */}
+      <header
+        className="header"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          marginBottom: 24,
+          paddingBottom: 16,
+          borderBottom: '1px solid #334155',
+        }}
+      >
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-3xl">🏷️</span>
-            <h1 className="text-2xl font-bold">إدارة تصنيفات المطاعم (Categories)</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 28 }}>🏷️</span>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#ffffff', margin: 0 }}>
+              إدارة تصنيفات المطاعم (Categories)
+            </h1>
           </div>
-          <p className="text-orange-100 text-sm max-w-xl">
+          <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 6, maxWidth: 650, lineHeight: 1.6 }}>
             تحكم بالتصنيفات التي تظهر في شريط الاستكشاف وتطبيق الهاتف بالكامل. يمكنك إضافة تصنيفات جديدة، تعديل أسمائها وأيقوناتها، وترتيب ظهورها للمستخدمين.
           </p>
         </div>
+
         <button
           onClick={openCreateModal}
-          className="bg-white text-orange-600 hover:bg-orange-50 font-bold px-5 py-3 rounded-xl shadow transition flex items-center gap-2 shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, #ff4757, #ff6b81)',
+            color: '#fff',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: 14,
+            fontWeight: 'bold',
+            fontSize: 14,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            boxShadow: '0 4px 15px rgba(255, 71, 87, 0.35)',
+            transition: 'all 0.2s ease',
+          }}
         >
-          <span>➕</span>
+          <span style={{ fontSize: 16 }}>➕</span>
           <span>إضافة تصنيف جديد</span>
         </button>
+      </header>
+
+      {/* Stats Row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 16,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: 18,
+            padding: 18,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              background: 'rgba(255, 71, 87, 0.15)',
+              color: '#ff4757',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+            }}
+          >
+            🏷️
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>إجمالي التصنيفات</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{categories.length}</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: 18,
+            padding: 18,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              background: 'rgba(34, 197, 94, 0.15)',
+              color: '#22c55e',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+            }}
+          >
+            🏪
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>إجمالي المطاعم المرتبطة</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#22c55e' }}>{totalRestaurants}</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: 18,
+            padding: 18,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              background: 'rgba(59, 130, 246, 0.15)',
+              color: '#3b82f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+            }}
+          >
+            📱
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>حالة المزامنة مع الموبايل</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#38bdf8' }}>مباشرة وفورية ⚡</div>
+          </div>
+        </div>
       </div>
 
-      {/* Loading & Error States */}
+      {/* Loading State */}
       {isLoading && (
-        <div className="bg-white rounded-2xl p-12 text-center text-slate-500 shadow-sm border border-slate-100">
-          <div className="animate-spin text-4xl mb-3">⏳</div>
-          <p className="font-semibold">جاري تحميل التصنيفات...</p>
+        <div
+          style={{
+            background: '#1e293b',
+            borderRadius: 18,
+            padding: 48,
+            textAlign: 'center',
+            color: '#94a3b8',
+            border: '1px solid #334155',
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+          <p style={{ fontWeight: 600 }}>جاري تحميل قائمة التصنيفات...</p>
         </div>
       )}
 
+      {/* Error State */}
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl flex items-center justify-between">
-          <p>{error}</p>
-          <button onClick={fetchCategories} className="text-xs bg-rose-600 text-white px-3 py-1.5 rounded-lg font-bold">
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid #ef4444',
+            color: '#fca5a5',
+            padding: 16,
+            borderRadius: 14,
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>{error}</span>
+          <button
+            onClick={fetchCategories}
+            style={{
+              background: '#ef4444',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 14px',
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: 12,
+            }}
+          >
             إعادة المحاولة
           </button>
         </div>
@@ -191,61 +362,153 @@ export default function CategoriesManager() {
 
       {/* Categories Grid */}
       {!isLoading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 20,
+          }}
+        >
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between group"
+              style={{
+                background: '#1e293b',
+                borderRadius: 20,
+                border: '1px solid #334155',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'transform 0.2s ease, border-color 0.2s ease',
+              }}
             >
               {/* Category Cover */}
-              <div className="h-32 bg-slate-800 relative overflow-hidden">
+              <div style={{ height: 140, position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
                 {cat.image ? (
                   <img
                     src={cat.image}
                     alt={cat.label}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-4xl">
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(135deg, #334155, #1e293b)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 40,
+                    }}
+                  >
                     {cat.icon}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                
-                {/* Emoji Badge */}
-                <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                  <span className="text-2xl bg-white/90 backdrop-blur p-1.5 rounded-xl shadow-sm leading-none">
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.2) 60%, transparent 100%)',
+                  }}
+                />
+
+                {/* Emoji & Label */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 12,
+                    right: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 24,
+                      background: 'rgba(255,255,255,0.15)',
+                      backdropFilter: 'blur(8px)',
+                      padding: '6px 10px',
+                      borderRadius: 12,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                    }}
+                  >
                     {cat.icon}
                   </span>
                   <div>
-                    <h3 className="text-white font-bold text-base leading-tight drop-shadow-sm">{cat.label}</h3>
-                    <span className="text-xs text-white/80 font-mono">Key: {cat.name}</span>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', margin: 0 }}>{cat.label}</h3>
+                    <span style={{ fontSize: 11, color: '#cbd5e1', fontFamily: 'monospace' }}>Key: {cat.name}</span>
                   </div>
                 </div>
 
                 {/* Order Badge */}
-                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur font-bold border border-white/20">
-                  ترتيب: #{cat.order}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 10,
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    color: '#f8fafc',
+                    fontSize: 11,
+                    padding: '4px 10px',
+                    borderRadius: 20,
+                    fontWeight: 700,
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  #{cat.order}
                 </div>
               </div>
 
-              {/* Category Body */}
-              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="flex items-center gap-1.5 font-medium bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+              {/* Category Footer Body */}
+              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: '#0f172a',
+                      padding: '5px 12px',
+                      borderRadius: 10,
+                      border: '1px solid #334155',
+                      color: '#94a3b8',
+                    }}
+                  >
                     <span>🏪</span>
-                    <span>{cat.restaurantCount ?? 0} مطاعم مرتبطة</span>
+                    <span>{cat.restaurantCount ?? 0} مطاعم</span>
                   </span>
-                  <span className="font-mono text-[11px] text-slate-400">
+                  <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>
                     {new Date(cat.createdAt).toLocaleDateString('ar-IQ')}
                   </span>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid #334155' }}>
                   <button
                     onClick={() => openEditModal(cat)}
-                    className="flex-1 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-1"
+                    style={{
+                      flex: 1,
+                      background: '#334155',
+                      color: '#f8fafc',
+                      border: 'none',
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      transition: 'background 0.2s',
+                    }}
                   >
                     <span>✏️</span>
                     <span>تعديل</span>
@@ -254,7 +517,19 @@ export default function CategoriesManager() {
                   {cat.name !== 'All' && (
                     <button
                       onClick={() => handleDelete(cat)}
-                      className="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        color: '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        padding: '8px 14px',
+                        borderRadius: 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                       title="حذف التصنيف"
                     >
                       <span>🗑️</span>
@@ -269,12 +544,43 @@ export default function CategoriesManager() {
 
       {/* Create / Edit Modal */}
       {(isCreateOpen || editingCategory) && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{editingCategory ? '✏️' : '➕'}</span>
-                <h2 className="text-lg font-bold text-slate-900">
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              background: '#1e293b',
+              borderRadius: 24,
+              maxWidth: 520,
+              width: '100%',
+              padding: 24,
+              border: '1px solid #ff4757',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid #334155',
+                paddingBottom: 14,
+                marginBottom: 18,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 24 }}>{editingCategory ? '✏️' : '➕'}</span>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', margin: 0 }}>
                   {editingCategory ? `تعديل تصنيف "${editingCategory.label}"` : 'إضافة تصنيف مطاعم جديد'}
                 </h2>
               </div>
@@ -283,16 +589,23 @@ export default function CategoriesManager() {
                   setIsCreateOpen(false);
                   setEditingCategory(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 text-xl font-bold p-1"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: 20,
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Arabic Label */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
                   عنوان التصنيف بالعربي (يظهر للمستخدمين في التطبيق) *
                 </label>
                 <input
@@ -301,13 +614,22 @@ export default function CategoriesManager() {
                   placeholder="مثال: مطاعم الشاورما، الأكلات الإيطالية..."
                   value={formData.label}
                   onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    fontSize: 14,
+                    outline: 'none',
+                  }}
                 />
               </div>
 
               {/* Internal Name / Key */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
                   المعرف الداخلي (Category Key بالإنجليزية) *
                 </label>
                 <input
@@ -317,31 +639,74 @@ export default function CategoriesManager() {
                   placeholder="مثال: Shawarma, Italian, SeaFood..."
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:opacity-50"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    fontSize: 14,
+                    fontFamily: 'monospace',
+                    outline: 'none',
+                    opacity: editingCategory?.name === 'All' ? 0.5 : 1,
+                  }}
                 />
-                <p className="text-[11px] text-slate-400 mt-1">يُستخدم لربط المطاعم بالتصنيف وفلترة النتائج بدقة.</p>
+                <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                  يُستخدم لربط المطاعم بالتصنيف وفلترة النتائج بدقة في قاعدة البيانات.
+                </p>
               </div>
 
               {/* Emoji Icon Picker */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">الأيقونة التعبيرية (Emoji) *</label>
-                <div className="flex items-center gap-3">
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
+                  الأيقونة التعبيرية (Emoji) *
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <input
                     type="text"
                     required
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    className="w-20 text-center text-2xl bg-slate-50 border border-slate-200 rounded-xl py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                    style={{
+                      width: 60,
+                      textAlign: 'center',
+                      fontSize: 22,
+                      padding: '8px 0',
+                      borderRadius: 12,
+                      background: '#0f172a',
+                      border: '1px solid #334155',
+                      color: '#ffffff',
+                      outline: 'none',
+                    }}
                   />
-                  <div className="flex-1 flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-100 rounded-xl max-h-24 overflow-y-auto">
+                  <div
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 6,
+                      padding: 8,
+                      background: '#0f172a',
+                      borderRadius: 12,
+                      border: '1px solid #334155',
+                      maxHeight: 80,
+                      overflowY: 'auto',
+                    }}
+                  >
                     {commonEmojis.map((emoji) => (
                       <button
                         key={emoji}
                         type="button"
                         onClick={() => setFormData({ ...formData, icon: emoji })}
-                        className={`text-xl p-1 hover:bg-white rounded-lg transition ${
-                          formData.icon === emoji ? 'bg-orange-100 ring-2 ring-orange-500' : ''
-                        }`}
+                        style={{
+                          fontSize: 18,
+                          padding: '4px 6px',
+                          background: formData.icon === emoji ? 'rgba(255, 71, 87, 0.3)' : 'transparent',
+                          border: formData.icon === emoji ? '1px solid #ff4757' : 'none',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                        }}
                       >
                         {emoji}
                       </button>
@@ -352,52 +717,91 @@ export default function CategoriesManager() {
 
               {/* Image Banner URL */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">رابط صورة الغلاف (Banner Image URL)</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
+                  رابط صورة الغلاف (Banner Image URL)
+                </label>
                 <input
                   type="url"
                   placeholder="https://images.unsplash.com/..."
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none font-mono"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    outline: 'none',
+                  }}
                 />
               </div>
 
               {/* Order index */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">ترتيب الظهور (Order Index)</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
+                  ترتيب الظهور (Order Index)
+                </label>
                 <input
                   type="number"
                   value={formData.order}
                   onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    outline: 'none',
+                  }}
                 />
               </div>
 
-              {/* Form Actions */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: 10, paddingTop: 14, borderTop: '1px solid #334155', marginTop: 6 }}>
                 <button
                   type="button"
                   onClick={() => {
                     setIsCreateOpen(false);
                     setEditingCategory(null);
                   }}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition text-sm"
+                  style={{
+                    flex: 1,
+                    background: '#334155',
+                    color: '#cbd5e1',
+                    border: 'none',
+                    padding: '12px 0',
+                    borderRadius: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: 13,
+                  }}
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl shadow transition text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #ff4757, #ff6b81)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '12px 0',
+                    borderRadius: 12,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    boxShadow: '0 4px 15px rgba(255, 71, 87, 0.35)',
+                    opacity: isSubmitting ? 0.6 : 1,
+                  }}
                 >
-                  {isSubmitting ? (
-                    <span>جاري الحفظ...</span>
-                  ) : (
-                    <>
-                      <span>💾</span>
-                      <span>{editingCategory ? 'حفظ التعديلات' : 'إضافة التصنيف'}</span>
-                    </>
-                  )}
+                  {isSubmitting ? 'جاري الحفظ...' : editingCategory ? '💾 حفظ التعديلات' : '➕ إضافة التصنيف'}
                 </button>
               </div>
             </form>
