@@ -1,26 +1,27 @@
 ﻿'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-interface Category {
+export interface CategoryItem {
   id: string;
   name: string;
   label: string;
   icon: string;
-  image?: string;
+  image?: string | null;
   order: number;
   restaurantCount?: number;
   createdAt: string;
 }
 
-export default function CategoriesManager() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Modal states
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+export default function CategoriesManager({
+  initialCategories,
+}: {
+  initialCategories: CategoryItem[];
+}) {
+  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -32,30 +33,8 @@ export default function CategoriesManager() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchCategories = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      if (data.success) {
-        setCategories(data.data || []);
-      } else {
-        setError(data.error || 'تعذر تحميل التصنيفات');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('خطأ في الاتصال بالخادم');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   const openCreateModal = () => {
+    setEditingCategory(null);
     setFormData({
       name: '',
       label: '',
@@ -63,10 +42,10 @@ export default function CategoriesManager() {
       image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600',
       order: categories.length,
     });
-    setIsCreateOpen(true);
+    setShowAddModal(true);
   };
 
-  const openEditModal = (cat: Category) => {
+  const openEditModal = (cat: CategoryItem) => {
     setEditingCategory(cat);
     setFormData({
       name: cat.name,
@@ -75,12 +54,13 @@ export default function CategoriesManager() {
       image: cat.image || '',
       order: cat.order || 0,
     });
+    setShowAddModal(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.label.trim()) {
-      alert('يرجى ملء اسم التصنيف والمعرف');
+      alert('يرجى ملء عنوان التصنيف والمعرف');
       return;
     }
 
@@ -94,9 +74,12 @@ export default function CategoriesManager() {
           body: JSON.stringify(formData),
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
+          setCategories((prev) =>
+            prev.map((c) => (c.id === editingCategory.id ? { ...c, ...data.data } : c))
+          );
+          setShowAddModal(false);
           setEditingCategory(null);
-          fetchCategories();
         } else {
           alert(data.error || 'تعذر تعديل التصنيف');
         }
@@ -108,9 +91,9 @@ export default function CategoriesManager() {
           body: JSON.stringify(formData),
         });
         const data = await res.json();
-        if (data.success) {
-          setIsCreateOpen(false);
-          fetchCategories();
+        if (res.ok && data.success) {
+          setCategories((prev) => [...prev, data.data]);
+          setShowAddModal(false);
         } else {
           alert(data.error || 'تعذر إضافة التصنيف');
         }
@@ -123,7 +106,7 @@ export default function CategoriesManager() {
     }
   };
 
-  const handleDelete = async (cat: Category) => {
+  const handleDelete = async (cat: CategoryItem) => {
     if (cat.name === 'All') {
       alert('لا يمكن حذف تصنيف (الكل)');
       return;
@@ -132,19 +115,22 @@ export default function CategoriesManager() {
       return;
     }
 
+    setLoadingId(cat.id);
     try {
       const res = await fetch(`/api/categories/${cat.id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
-      if (data.success) {
-        fetchCategories();
+      if (res.ok && data.success) {
+        setCategories((prev) => prev.filter((c) => c.id !== cat.id));
       } else {
         alert(data.error || 'تعذر حذف التصنيف');
       }
     } catch (err) {
       console.error(err);
       alert('حدث خطأ أثناء الحذف');
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -153,38 +139,14 @@ export default function CategoriesManager() {
   const totalRestaurants = categories.reduce((acc, curr) => (curr.name !== 'All' ? acc + (curr.restaurantCount || 0) : acc), 0);
 
   return (
-    <div className="dashboard-container" style={{ padding: '24px 32px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Header */}
-      <header
-        className="header"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          marginBottom: 24,
-          paddingBottom: 16,
-          borderBottom: '1px solid #334155',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 28 }}>🏷️</span>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#ffffff', margin: 0 }}>
-              إدارة تصنيفات المطاعم (Categories)
-            </h1>
-          </div>
-          <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 6, maxWidth: 650, lineHeight: 1.6 }}>
-            تحكم بالتصنيفات التي تظهر في شريط الاستكشاف وتطبيق الهاتف بالكامل. يمكنك إضافة تصنيفات جديدة، تعديل أسمائها وأيقوناتها، وترتيب ظهورها للمستخدمين.
-          </p>
-        </div>
-
+    <div>
+      {/* Top Controls & Action Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <button
           onClick={openCreateModal}
           style={{
             background: 'linear-gradient(135deg, #ff4757, #ff6b81)',
-            color: '#fff',
+            color: '#ffffff',
             border: 'none',
             padding: '12px 24px',
             borderRadius: 14,
@@ -195,181 +157,54 @@ export default function CategoriesManager() {
             alignItems: 'center',
             gap: 8,
             boxShadow: '0 4px 15px rgba(255, 71, 87, 0.35)',
-            transition: 'all 0.2s ease',
           }}
         >
           <span style={{ fontSize: 16 }}>➕</span>
-          <span>إضافة تصنيف جديد</span>
+          <span>إضافة تصنيف مطاعم جديد</span>
         </button>
-      </header>
 
-      {/* Stats Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 16,
-          marginBottom: 24,
-        }}
-      >
-        <div
-          style={{
-            background: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: 18,
-            padding: 18,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-          }}
-        >
-          <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: 'rgba(255, 71, 87, 0.15)',
-              color: '#ff4757',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
+              background: '#1e293b',
+              border: '1px solid #334155',
+              padding: '8px 16px',
+              borderRadius: 12,
+              fontSize: 13,
+              color: '#94a3b8',
+              fontWeight: 600,
             }}
           >
-            🏷️
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>إجمالي التصنيفات</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{categories.length}</div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: 18,
-            padding: 18,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-          }}
-        >
-          <div
+            إجمالي التصنيفات: <strong style={{ color: '#fff' }}>{categories.length}</strong>
+          </span>
+          <span
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: 'rgba(34, 197, 94, 0.15)',
-              color: '#22c55e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
+              background: '#1e293b',
+              border: '1px solid #334155',
+              padding: '8px 16px',
+              borderRadius: 12,
+              fontSize: 13,
+              color: '#4ade80',
+              fontWeight: 600,
             }}
           >
-            🏪
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>إجمالي المطاعم المرتبطة</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#22c55e' }}>{totalRestaurants}</div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: 18,
-            padding: 18,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: 'rgba(59, 130, 246, 0.15)',
-              color: '#3b82f6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-            }}
-          >
-            📱
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>حالة المزامنة مع الموبايل</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#38bdf8' }}>مباشرة وفورية ⚡</div>
-          </div>
+            المطاعم المصنفة: <strong style={{ color: '#4ade80' }}>{totalRestaurants}</strong>
+          </span>
         </div>
       </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div
-          style={{
-            background: '#1e293b',
-            borderRadius: 18,
-            padding: 48,
-            textAlign: 'center',
-            color: '#94a3b8',
-            border: '1px solid #334155',
-          }}
-        >
-          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-          <p style={{ fontWeight: 600 }}>جاري تحميل قائمة التصنيفات...</p>
-        </div>
-      )}
+      {/* Categories Grid View */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 20,
+        }}
+      >
+        {categories.map((cat) => {
+          const isDeleting = loadingId === cat.id;
 
-      {/* Error State */}
-      {error && (
-        <div
-          style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid #ef4444',
-            color: '#fca5a5',
-            padding: 16,
-            borderRadius: 14,
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <span>{error}</span>
-          <button
-            onClick={fetchCategories}
-            style={{
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
-              padding: '6px 14px',
-              borderRadius: 10,
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: 12,
-            }}
-          >
-            إعادة المحاولة
-          </button>
-        </div>
-      )}
-
-      {/* Categories Grid */}
-      {!isLoading && !error && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 20,
-          }}
-        >
-          {categories.map((cat) => (
+          return (
             <div
               key={cat.id}
               style={{
@@ -380,12 +215,12 @@ export default function CategoriesManager() {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                opacity: isDeleting ? 0.5 : 1,
               }}
             >
-              {/* Category Cover */}
-              <div style={{ height: 140, position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
+              {/* Category Header Image */}
+              <div style={{ height: 140, position: 'relative', background: '#0f172a', overflow: 'hidden' }}>
                 {cat.image ? (
                   <img
                     src={cat.image}
@@ -397,11 +232,11 @@ export default function CategoriesManager() {
                     style={{
                       width: '100%',
                       height: '100%',
-                      background: 'linear-gradient(135deg, #334155, #1e293b)',
+                      background: 'linear-gradient(135deg, #1e293b, #0f172a)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 40,
+                      fontSize: 44,
                     }}
                   >
                     {cat.icon}
@@ -411,11 +246,11 @@ export default function CategoriesManager() {
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.2) 60%, transparent 100%)',
+                    background: 'linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.2) 60%, transparent 100%)',
                   }}
                 />
 
-                {/* Emoji & Label */}
+                {/* Emoji + Title on top of gradient */}
                 <div
                   style={{
                     position: 'absolute',
@@ -428,7 +263,7 @@ export default function CategoriesManager() {
                 >
                   <span
                     style={{
-                      fontSize: 24,
+                      fontSize: 22,
                       background: 'rgba(255,255,255,0.15)',
                       backdropFilter: 'blur(8px)',
                       padding: '6px 10px',
@@ -440,11 +275,11 @@ export default function CategoriesManager() {
                   </span>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', margin: 0 }}>{cat.label}</h3>
-                    <span style={{ fontSize: 11, color: '#cbd5e1', fontFamily: 'monospace' }}>Key: {cat.name}</span>
+                    <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>Key: {cat.name}</span>
                   </div>
                 </div>
 
-                {/* Order Badge */}
+                {/* Order Index Badge */}
                 <div
                   style={{
                     position: 'absolute',
@@ -453,18 +288,18 @@ export default function CategoriesManager() {
                     background: 'rgba(0, 0, 0, 0.65)',
                     color: '#f8fafc',
                     fontSize: 11,
-                    padding: '4px 10px',
+                    padding: '3px 10px',
                     borderRadius: 20,
                     fontWeight: 700,
                     border: '1px solid rgba(255,255,255,0.2)',
                     backdropFilter: 'blur(4px)',
                   }}
                 >
-                  #{cat.order}
+                  ترتيب: #{cat.order}
                 </div>
               </div>
 
-              {/* Category Footer Body */}
+              {/* Category Body Details */}
               <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span
@@ -482,14 +317,14 @@ export default function CategoriesManager() {
                     }}
                   >
                     <span>🏪</span>
-                    <span>{cat.restaurantCount ?? 0} مطاعم</span>
+                    <span>{cat.restaurantCount ?? 0} مطاعم تابعة</span>
                   </span>
                   <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>
                     {new Date(cat.createdAt).toLocaleDateString('ar-IQ')}
                   </span>
                 </div>
 
-                {/* Actions */}
+                {/* Action Buttons */}
                 <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid #334155' }}>
                   <button
                     onClick={() => openEditModal(cat)}
@@ -498,7 +333,7 @@ export default function CategoriesManager() {
                       background: '#334155',
                       color: '#f8fafc',
                       border: 'none',
-                      padding: '8px 14px',
+                      padding: '9px 14px',
                       borderRadius: 10,
                       fontSize: 12,
                       fontWeight: 700,
@@ -507,7 +342,6 @@ export default function CategoriesManager() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 6,
-                      transition: 'background 0.2s',
                     }}
                   >
                     <span>✏️</span>
@@ -517,11 +351,12 @@ export default function CategoriesManager() {
                   {cat.name !== 'All' && (
                     <button
                       onClick={() => handleDelete(cat)}
+                      disabled={isDeleting}
                       style={{
                         background: 'rgba(239, 68, 68, 0.15)',
                         color: '#f87171',
                         border: '1px solid rgba(239, 68, 68, 0.3)',
-                        padding: '8px 14px',
+                        padding: '9px 14px',
                         borderRadius: 10,
                         fontSize: 12,
                         fontWeight: 700,
@@ -538,18 +373,17 @@ export default function CategoriesManager() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
-      {/* Create / Edit Modal */}
-      {(isCreateOpen || editingCategory) && (
+      {/* Add / Edit Category Modal */}
+      {showAddModal && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(6px)',
+            background: 'rgba(0,0,0,0.85)',
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
@@ -560,12 +394,14 @@ export default function CategoriesManager() {
           <div
             style={{
               background: '#1e293b',
-              borderRadius: 24,
-              maxWidth: 520,
-              width: '100%',
               padding: 24,
+              borderRadius: 20,
+              maxWidth: 500,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               border: '1px solid #ff4757',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
             }}
           >
             <div
@@ -575,20 +411,14 @@ export default function CategoriesManager() {
                 justifyContent: 'space-between',
                 borderBottom: '1px solid #334155',
                 paddingBottom: 14,
-                marginBottom: 18,
+                marginBottom: 16,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 24 }}>{editingCategory ? '✏️' : '➕'}</span>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                  {editingCategory ? `تعديل تصنيف "${editingCategory.label}"` : 'إضافة تصنيف مطاعم جديد'}
-                </h2>
-              </div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#ff6b81', margin: 0 }}>
+                {editingCategory ? `تعديل تصنيف "${editingCategory.label}"` : 'إضافة تصنيف مطاعم جديد'}
+              </h2>
               <button
-                onClick={() => {
-                  setIsCreateOpen(false);
-                  setEditingCategory(null);
-                }}
+                onClick={() => setShowAddModal(false)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -602,11 +432,11 @@ export default function CategoriesManager() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <form onSubmit={handleSave}>
               {/* Arabic Label */}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
-                  عنوان التصنيف بالعربي (يظهر للمستخدمين في التطبيق) *
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
+                  عنوان التصنيف بالعربي (يظهر في التطبيق):
                 </label>
                 <input
                   type="text"
@@ -616,21 +446,20 @@ export default function CategoriesManager() {
                   onChange={(e) => setFormData({ ...formData, label: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: 12,
+                    padding: 10,
+                    borderRadius: 10,
                     background: '#0f172a',
                     border: '1px solid #334155',
-                    color: '#ffffff',
+                    color: '#fff',
                     fontSize: 14,
-                    outline: 'none',
                   }}
                 />
               </div>
 
-              {/* Internal Name / Key */}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
-                  المعرف الداخلي (Category Key بالإنجليزية) *
+              {/* Internal Key */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
+                  المعرف الداخلي (Category Key بالإنجليزية):
                 </label>
                 <input
                   type="text"
@@ -641,26 +470,22 @@ export default function CategoriesManager() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: 12,
+                    padding: 10,
+                    borderRadius: 10,
                     background: '#0f172a',
                     border: '1px solid #334155',
-                    color: '#ffffff',
+                    color: '#fff',
                     fontSize: 14,
                     fontFamily: 'monospace',
-                    outline: 'none',
                     opacity: editingCategory?.name === 'All' ? 0.5 : 1,
                   }}
                 />
-                <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
-                  يُستخدم لربط المطاعم بالتصنيف وفلترة النتائج بدقة في قاعدة البيانات.
-                </p>
               </div>
 
               {/* Emoji Icon Picker */}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
-                  الأيقونة التعبيرية (Emoji) *
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
+                  الأيقونة التعبيرية (Emoji):
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <input
@@ -672,12 +497,11 @@ export default function CategoriesManager() {
                       width: 60,
                       textAlign: 'center',
                       fontSize: 22,
-                      padding: '8px 0',
-                      borderRadius: 12,
+                      padding: 8,
+                      borderRadius: 10,
                       background: '#0f172a',
                       border: '1px solid #334155',
-                      color: '#ffffff',
-                      outline: 'none',
+                      color: '#fff',
                     }}
                   />
                   <div
@@ -688,9 +512,9 @@ export default function CategoriesManager() {
                       gap: 6,
                       padding: 8,
                       background: '#0f172a',
-                      borderRadius: 12,
+                      borderRadius: 10,
                       border: '1px solid #334155',
-                      maxHeight: 80,
+                      maxHeight: 75,
                       overflowY: 'auto',
                     }}
                   >
@@ -704,7 +528,7 @@ export default function CategoriesManager() {
                           padding: '4px 6px',
                           background: formData.icon === emoji ? 'rgba(255, 71, 87, 0.3)' : 'transparent',
                           border: formData.icon === emoji ? '1px solid #ff4757' : 'none',
-                          borderRadius: 8,
+                          borderRadius: 6,
                           cursor: 'pointer',
                         }}
                       >
@@ -715,10 +539,10 @@ export default function CategoriesManager() {
                 </div>
               </div>
 
-              {/* Image Banner URL */}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
-                  رابط صورة الغلاف (Banner Image URL)
+              {/* Image URL */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
+                  رابط صورة الغلاف (Banner Image URL):
                 </label>
                 <input
                   type="url"
@@ -727,22 +551,21 @@ export default function CategoriesManager() {
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: 12,
+                    padding: 10,
+                    borderRadius: 10,
                     background: '#0f172a',
                     border: '1px solid #334155',
-                    color: '#ffffff',
+                    color: '#fff',
                     fontSize: 13,
                     fontFamily: 'monospace',
-                    outline: 'none',
                   }}
                 />
               </div>
 
-              {/* Order index */}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 }}>
-                  ترتيب الظهور (Order Index)
+              {/* Order Index */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
+                  ترتيب الظهور (Order Index):
                 </label>
                 <input
                   type="number"
@@ -750,35 +573,30 @@ export default function CategoriesManager() {
                   onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: 12,
+                    padding: 10,
+                    borderRadius: 10,
                     background: '#0f172a',
                     border: '1px solid #334155',
-                    color: '#ffffff',
+                    color: '#fff',
                     fontSize: 14,
                     fontWeight: 'bold',
-                    outline: 'none',
                   }}
                 />
               </div>
 
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 10, paddingTop: 14, borderTop: '1px solid #334155', marginTop: 6 }}>
+              {/* Modal Buttons */}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsCreateOpen(false);
-                    setEditingCategory(null);
-                  }}
+                  onClick={() => setShowAddModal(false)}
                   style={{
-                    flex: 1,
                     background: '#334155',
-                    color: '#cbd5e1',
+                    color: '#fff',
                     border: 'none',
-                    padding: '12px 0',
-                    borderRadius: 12,
-                    fontWeight: 700,
+                    padding: '10px 18px',
+                    borderRadius: 10,
                     cursor: 'pointer',
+                    fontWeight: 'bold',
                     fontSize: 13,
                   }}
                 >
@@ -788,20 +606,18 @@ export default function CategoriesManager() {
                   type="submit"
                   disabled={isSubmitting}
                   style={{
-                    flex: 1,
-                    background: 'linear-gradient(135deg, #ff4757, #ff6b81)',
-                    color: '#ffffff',
+                    background: '#ff4757',
+                    color: '#fff',
                     border: 'none',
-                    padding: '12px 0',
-                    borderRadius: 12,
-                    fontWeight: 800,
+                    padding: '10px 22px',
+                    borderRadius: 10,
+                    fontWeight: 'bold',
                     cursor: 'pointer',
                     fontSize: 13,
-                    boxShadow: '0 4px 15px rgba(255, 71, 87, 0.35)',
                     opacity: isSubmitting ? 0.6 : 1,
                   }}
                 >
-                  {isSubmitting ? 'جاري الحفظ...' : editingCategory ? '💾 حفظ التعديلات' : '➕ إضافة التصنيف'}
+                  {isSubmitting ? 'جاري الحفظ...' : editingCategory ? '💾 حفظ التعديلات' : '➕ حفظ وإضافة التصنيف'}
                 </button>
               </div>
             </form>
