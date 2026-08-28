@@ -1,6 +1,7 @@
-import { prisma } from'@/lib/prisma';
-import React from'react';
-import Link from'next/link';
+import { prisma } from '@/lib/prisma';
+import React from 'react';
+import Link from 'next/link';
+import MaintenanceControl from '@/components/MaintenanceControl';
 
 export const revalidate = 0;
 
@@ -39,6 +40,9 @@ export default async function DashboardOverviewPage() {
  </div>
  <span className="title-badge">v2.0 Modular Dashboard</span>
  </header>
+
+ {/* Live Maintenance Mode Control Bar */}
+ <MaintenanceControl />
 
  {/* Main Stats Cards */}
  <div className="stats-grid">

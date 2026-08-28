@@ -128,7 +128,7 @@ export async function POST(request: Request) {
  success: true,
  data: review,
  status: initialStatus,
- requiresApproval: initialStatus ==='PENDING',
+ requiresApproval: false,
  });
  } catch (error) {
  console.error('Error creating review:', error);

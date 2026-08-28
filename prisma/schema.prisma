@@ -148,7 +148,10 @@ model RestaurantCollection {
 
 model SystemSettings {
   id                  String   @id @default("global")
-  autoApproveAllPosts Boolean  @default(false)
+  autoApproveAllPosts Boolean  @default(true)
+  isMaintenanceMode   Boolean  @default(false)
+  maintenanceTitle    String?  @default("عذراً، التطبيق قيد الصيانة 🛠️")
+  maintenanceMessage  String?  @default("نعمل حالياً على إجراء تحديثات وصيانة دورية لتحسين تجربتكم. سنعود للعمل قريباً جداً!")
   updatedAt           DateTime @updatedAt
 }
 

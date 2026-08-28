@@ -10,7 +10,11 @@ export async function GET() {
       settings = await prisma.systemSettings.create({
         data: {
           id: 'global',
-          autoApproveAllPosts: false,
+          autoApproveAllPosts: true,
+          isMaintenanceMode: false,
+          maintenanceTitle: 'عذراً، التطبيق قيد الصيانة 🛠️',
+          maintenanceMessage:
+            'نعمل حالياً على إجراء تحديثات وصيانة دورية لتحسين تجربتكم. سنعود للعمل قريباً جداً!',
         },
       });
     }
@@ -24,18 +28,25 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { autoApproveAllPosts } = body;
+    const { autoApproveAllPosts, isMaintenanceMode, maintenanceTitle, maintenanceMessage } = body;
 
-    if (typeof autoApproveAllPosts !== 'boolean') {
-      return NextResponse.json({ success: false, error: 'Invalid value' }, { status: 400 });
-    }
+    const updateData: any = {};
+    if (typeof autoApproveAllPosts === 'boolean') updateData.autoApproveAllPosts = autoApproveAllPosts;
+    if (typeof isMaintenanceMode === 'boolean') updateData.isMaintenanceMode = isMaintenanceMode;
+    if (typeof maintenanceTitle === 'string') updateData.maintenanceTitle = maintenanceTitle.trim();
+    if (typeof maintenanceMessage === 'string') updateData.maintenanceMessage = maintenanceMessage.trim();
 
     const settings = await prisma.systemSettings.upsert({
       where: { id: 'global' },
-      update: { autoApproveAllPosts },
+      update: updateData,
       create: {
         id: 'global',
-        autoApproveAllPosts,
+        autoApproveAllPosts: autoApproveAllPosts ?? true,
+        isMaintenanceMode: isMaintenanceMode ?? false,
+        maintenanceTitle: maintenanceTitle ?? 'عذراً، التطبيق قيد الصيانة 🛠️',
+        maintenanceMessage:
+          maintenanceMessage ??
+          'نعمل حالياً على إجراء تحديثات وصيانة دورية لتحسين تجربتكم. سنعود للعمل قريباً جداً!',
       },
     });
 
