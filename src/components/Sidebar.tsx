@@ -48,16 +48,22 @@ export default function Sidebar() {
  href:'/restaurants',
  },
  {
- label:'القوائم المخصصة والسلاسل',
- icon:'',
- href:'/collections',
- badge:'جديد',
+ label: 'القوائم المخصصة والسلاسل',
+ icon: '🥗',
+ href: '/collections',
+ badge: 'جديد',
  },
  {
- label:'المستخدمين وكبار المستكشفين',
- icon:'',
- href:'/users',
- badge:'الترتيب',
+ label: 'إرسال الإشعارات والتنبيهات',
+ icon: '🔔',
+ href: '/notifications',
+ badge: 'بث مباشر',
+ },
+ {
+ label: 'المستخدمين وكبار المستكشفين',
+ icon: '👥',
+ href: '/users',
+ badge: 'الترتيب',
  },
  ];
 

@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +34,15 @@ export async function POST(request: Request) {
         },
       });
 
+      // Remove previous like notification if any
+      await prisma.notification.deleteMany({
+        where: {
+          actorId: userId,
+          reviewId: reviewId,
+          type: 'LIKE',
+        },
+      });
+
       const likeCount = await prisma.like.count({
         where: { reviewId },
       });
@@ -50,6 +59,28 @@ export async function POST(request: Request) {
           reviewId,
         },
       });
+
+      // Find the review owner and create notification if not liking own post
+      try {
+        const review = await prisma.review.findUnique({
+          where: { id: reviewId },
+          select: { userId: true },
+        });
+
+        if (review && review.userId && review.userId !== userId) {
+          await prisma.notification.create({
+            data: {
+              userId: review.userId,
+              actorId: userId,
+              reviewId: reviewId,
+              type: 'LIKE',
+              content: 'أعجب بمنشورك',
+            },
+          });
+        }
+      } catch (notifErr) {
+        console.error('Error creating like notification:', notifErr);
+      }
 
       const likeCount = await prisma.like.count({
         where: { reviewId },

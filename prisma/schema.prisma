@@ -33,6 +33,8 @@ model User {
   savedPosts            SavedPost[]
   following             Follows[]         @relation("follower")
   followers             Follows[]         @relation("following")
+  notifications         Notification[]    @relation("userNotifications")
+  triggeredNotifications Notification[]   @relation("actorNotifications")
 }
 
 model Restaurant {
@@ -71,6 +73,7 @@ model Review {
   likes        Like[]
   comments     Comment[]
   savedPosts   SavedPost[]
+  notifications Notification[]
 }
 
 model RestaurantStory {
@@ -157,4 +160,19 @@ model SavedPost {
   createdAt DateTime @default(now())
 
   @@id([userId, reviewId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   // Recipient user
+  user      User     @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actorId   String?  // Triggering user (null for admin/system broadcast)
+  actor     User?    @relation("actorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+  title     String?  // Notification title for broadcasts / announcements
+  reviewId  String?
+  review    Review?  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  type      String   // LIKE, COMMENT, BROADCAST, SYSTEM
+  content   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

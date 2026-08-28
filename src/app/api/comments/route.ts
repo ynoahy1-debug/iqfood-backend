@@ -70,6 +70,28 @@ export async function POST(request: Request) {
  },
  });
 
+ // Find review owner and create notification if commenter is not the post owner
+ try {
+   const review = await prisma.review.findUnique({
+     where: { id: reviewId },
+     select: { userId: true },
+   });
+
+   if (review && review.userId && review.userId !== targetUserId) {
+     await prisma.notification.create({
+       data: {
+         userId: review.userId,
+         actorId: targetUserId,
+         reviewId: reviewId,
+         type: 'COMMENT',
+         content: text.trim(),
+       },
+     });
+   }
+ } catch (notifErr) {
+   console.error('Error creating comment notification:', notifErr);
+ }
+
  return NextResponse.json({
  success: true,
  data: {
