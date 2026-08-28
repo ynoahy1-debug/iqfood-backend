@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       where: whereClause,
       orderBy: [
         { order: 'asc' },
-        { createdAt: 'desc' },
+        { createdAt: 'asc' },
       ],
       include: {
         restaurant: {
