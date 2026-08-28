@@ -85,13 +85,8 @@ export async function POST(request: Request) {
  }
  }
 
- // CHECK GLOBAL SETTINGS FOR MASTER AUTO-APPROVE TOGGLE
- const settings = await prisma.systemSettings.findFirst();
- const globalAutoApprove = settings?.autoApproveAllPosts ?? false;
-
- // Approved directly if global master toggle is ON OR user has individual'canPostWithoutApproval' privilege
- const canBypassApproval = globalAutoApprove || (user as any)?.canPostWithoutApproval === true;
- const initialStatus = canBypassApproval ?'APPROVED' :'PENDING';
+  // Auto-approve posts directly
+  const initialStatus = 'APPROVED';
 
  // Backend Image Compression & Size Optimization Check
  let compressedImage = image || null;
