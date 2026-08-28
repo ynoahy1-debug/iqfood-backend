@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const city = searchParams.get('city');
     const area = searchParams.get('area');
     const areaId = searchParams.get('areaId');
     const search = searchParams.get('search');
@@ -15,6 +16,10 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get('sortBy');
 
     const where: any = { isFrozen: false };
+
+    if (city && city.trim() !== 'All' && city.trim() !== 'الكل' && city.trim() !== 'جميع المحافظات') {
+      where.city = city.trim();
+    }
 
     if (category && category.trim() !== 'All' && category.trim() !== 'الكل') {
       where.category = category.trim();

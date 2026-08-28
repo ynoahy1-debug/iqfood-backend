@@ -42,6 +42,27 @@ export const ALL_RESTAURANT_FEATURES = [
   { id: 'مناسب لذوي الاحتياجات', label: '♿ مناسب لذوي الاحتياجات الخاصة' },
 ];
 
+export const IRAQI_GOVERNORATES = [
+  'بغداد',
+  'أربيل',
+  'البصرة',
+  'السليمانية',
+  'النجف الأشرف',
+  'كربلاء المقدسة',
+  'نينوى (الموصل)',
+  'كركوك',
+  'بابل (الحلة)',
+  'دهوك',
+  'الأنبار (الرمادي/الفلوجة)',
+  'صلاح الدين (تكريت/سامراء)',
+  'ديالى (بعقوبة)',
+  'ذي قار (الناصرية)',
+  'ميسان (العمارة)',
+  'المثنى (السماوة)',
+  'القادسية (الديوانية)',
+  'واسط (الكوت)',
+];
+
 export default function RestaurantsManager({
   initialRestaurants,
   availableAreas = [],
@@ -60,6 +81,7 @@ export default function RestaurantsManager({
   const [name, setName] = useState('');
   const [category, setCategory] = useState('برغر');
   const [city, setCity] = useState('بغداد');
+  const [customCity, setCustomCity] = useState('');
   const [areaId, setAreaId] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('0770 123 4567');
@@ -82,16 +104,14 @@ export default function RestaurantsManager({
       })
       .catch(() => {});
 
-    if (availableAreas.length === 0) {
-      fetch('/api/areas')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && Array.isArray(data.data)) {
-            setAreasList(data.data);
-          }
-        })
-        .catch(() => {});
-    }
+    fetch('/api/areas')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setAreasList(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const openCreateModal = () => {
@@ -99,7 +119,8 @@ export default function RestaurantsManager({
     setName('');
     setCategory(dynamicCategories[0]?.name || 'برغر');
     setCity('بغداد');
-    setAreaId(areasList[0]?.id || '');
+    setCustomCity('');
+    setAreaId('');
     setAddress('');
     setPhone('0770 123 4567');
     setWorkingHours('12:00 م - 12:00 ص');
@@ -113,7 +134,13 @@ export default function RestaurantsManager({
     setEditingRestaurant(r);
     setName(r.name);
     setCategory(r.category);
-    setCity(r.city || 'بغداد');
+    if (IRAQI_GOVERNORATES.includes(r.city)) {
+      setCity(r.city);
+      setCustomCity('');
+    } else {
+      setCity('أخرى');
+      setCustomCity(r.city || '');
+    }
     setAreaId(r.areaId || (r.area?.id) || '');
     setAddress(r.address || '');
     setPhone(r.phone || '0770 123 4567');
@@ -182,6 +209,8 @@ export default function RestaurantsManager({
       return;
     }
 
+    const finalCity = city === 'أخرى' ? (customCity.trim() || 'أخرى') : city;
+
     try {
       setIsSubmitting(true);
       if (editingRestaurant) {
@@ -192,7 +221,7 @@ export default function RestaurantsManager({
           body: JSON.stringify({
             name: name.trim(),
             category: category.trim(),
-            city: city.trim(),
+            city: finalCity,
             areaId: areaId || null,
             address: address.trim(),
             phone: phone.trim(),
@@ -221,7 +250,7 @@ export default function RestaurantsManager({
           body: JSON.stringify({
             name: name.trim(),
             category: category.trim(),
-            city: city.trim(),
+            city: finalCity,
             areaId: areaId || null,
             address: address.trim(),
             phone: phone.trim(),
@@ -285,6 +314,12 @@ export default function RestaurantsManager({
       setLoadingId(null);
     }
   };
+
+  // Filter available areas for the currently selected city in the modal
+  const effectiveCity = city === 'أخرى' ? customCity : city;
+  const cityFilteredAreas = areasList.filter(
+    (a) => !effectiveCity || a.city === effectiveCity || a.city === 'بغداد'
+  );
 
   const totalViews = restaurants.reduce((acc, curr) => acc + (curr.viewsCount || 0), 0);
 
@@ -357,7 +392,7 @@ export default function RestaurantsManager({
           <thead>
             <tr style={{ background: '#0f172a', borderBottom: '1px solid #334155' }}>
               <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>المطعم</th>
-              <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>التصنيف والمنطقة</th>
+              <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>التصنيف والمدينة/المنطقة</th>
               <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>المميزات والخدمات</th>
               <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>المشاهدات 👁️</th>
               <th style={{ padding: '16px 20px', color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>التقييم</th>
@@ -400,7 +435,7 @@ export default function RestaurantsManager({
                     </div>
                   </td>
 
-                  {/* Category & Area */}
+                  {/* Category & City/Area */}
                   <td style={{ padding: '16px 20px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <span
@@ -418,7 +453,7 @@ export default function RestaurantsManager({
                         🏷️ {r.category}
                       </span>
                       <span style={{ fontSize: 12, color: '#38bdf8' }}>
-                        📍 {r.area?.name || r.address || r.city || 'بغداد'}
+                        🏛️ {r.city || 'بغداد'} {r.area?.name ? `• 📍 ${r.area.name}` : ''}
                       </span>
                     </div>
                   </td>
@@ -609,51 +644,18 @@ export default function RestaurantsManager({
                 />
               </div>
 
-              {/* Category & Area in 2 columns */}
+              {/* Governorate & Area Selection */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 4, color: '#cbd5e1' }}>
-                    تصنيف المطعم (Category): *
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: 9,
-                      borderRadius: 10,
-                      background: '#0f172a',
-                      border: '1px solid #334155',
-                      color: '#fff',
-                      fontSize: 13,
-                    }}
-                  >
-                    {dynamicCategories.length > 0 ? (
-                      dynamicCategories.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="Burger">برغر (Burger)</option>
-                        <option value="Pizza">بيتزا (Pizza)</option>
-                        <option value="Sushi">سوشي (Sushi)</option>
-                        <option value="Coffee">كافيه وقهوة (Coffee)</option>
-                        <option value="Desserts">حلويات (Desserts)</option>
-                        <option value="Traditional">مشاوي وأكلات شرقية</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                <div>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 4, color: '#38bdf8' }}>
-                    📍 منطقة / حي بغداد: *
+                    🏛️ المحافظة / المدينة: *
                   </label>
                   <select
-                    value={areaId}
-                    onChange={(e) => setAreaId(e.target.value)}
+                    value={city}
+                    onChange={(e) => {
+                      setCity(e.target.value);
+                      setAreaId('');
+                    }}
                     style={{
                       width: '100%',
                       padding: 9,
@@ -665,20 +667,107 @@ export default function RestaurantsManager({
                       fontSize: 13,
                     }}
                   >
-                    <option value="">-- اختر المنطقة --</option>
-                    {areasList.map((a) => (
+                    {IRAQI_GOVERNORATES.map((gov) => (
+                      <option key={gov} value={gov}>
+                        🏛️ {gov}
+                      </option>
+                    ))}
+                    <option value="أخرى">➕ محافظة أخرى...</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 4, color: '#38bdf8' }}>
+                    📍 المنطقة / الحي:
+                  </label>
+                  <select
+                    value={areaId}
+                    onChange={(e) => setAreaId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: 9,
+                      borderRadius: 10,
+                      background: '#0f172a',
+                      border: '1px solid #334155',
+                      color: '#fff',
+                      fontSize: 13,
+                    }}
+                  >
+                    <option value="">-- اختر المنطقة / الحي --</option>
+                    {cityFilteredAreas.map((a) => (
                       <option key={a.id} value={a.id}>
-                        📍 {a.name}
+                        📍 {a.name} ({a.city})
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
+              {city === 'أخرى' && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 4, color: '#38bdf8' }}>
+                    اكتب اسم المحافظة / المدينة:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="اسم المحافظة أو المدينة..."
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: 9,
+                      borderRadius: 10,
+                      background: '#0f172a',
+                      border: '1px solid #38bdf8',
+                      color: '#fff',
+                      fontSize: 13,
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Category */}
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 4, color: '#cbd5e1' }}>
+                  تصنيف المطعم (Category): *
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: 9,
+                    borderRadius: 10,
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    color: '#fff',
+                    fontSize: 13,
+                  }}
+                >
+                  {dynamicCategories.length > 0 ? (
+                    dynamicCategories.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Burger">برغر (Burger)</option>
+                      <option value="Pizza">بيتزا (Pizza)</option>
+                      <option value="Sushi">سوشي (Sushi)</option>
+                      <option value="Coffee">كافيه وقهوة (Coffee)</option>
+                      <option value="Desserts">حلويات (Desserts)</option>
+                      <option value="Traditional">مشاوي وأكلات شرقية</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
               {/* Amenities & Features Multi-Checkboxes */}
               <div style={{ marginBottom: 14 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', marginBottom: 8, color: '#fbbf24' }}>
-                  ✨ المميزات والخدمات المتوفرة بالمطعم (اختر ما ينطبق):
+                  ✨ المميزات والخدمات المتوفرة بالمطعم:
                 </label>
                 <div
                   style={{
@@ -735,7 +824,7 @@ export default function RestaurantsManager({
                   </label>
                   <input
                     type="text"
-                    placeholder="مثال: شارع 14 رمضان مقابل مول المنصور..."
+                    placeholder="مثال: الشارع الرئيسي، قرب المول..."
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     style={{
