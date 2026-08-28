@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 
@@ -55,6 +55,51 @@ export default function CategoriesManager({
       order: cat.order || 0,
     });
     setShowAddModal(true);
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('يرجى اختيار ملف صورة صالح (JPEG, PNG, WebP)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+          setFormData((prev) => ({ ...prev, image: compressedBase64 }));
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -539,24 +584,130 @@ export default function CategoriesManager({
                 </div>
               </div>
 
-              {/* Image URL */}
-              <div style={{ marginBottom: 14 }}>
+              {/* Cover Image Upload (From Device or URL) */}
+              <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#cbd5e1' }}>
-                  رابط صورة الغلاف (Banner Image URL):
+                  صورة غلاف التصنيف (من جهازك أو رابط مباشر):
                 </label>
+
+                {formData.image ? (
+                  <div
+                    style={{
+                      position: 'relative',
+                      borderRadius: 14,
+                      overflow: 'hidden',
+                      height: 140,
+                      border: '1px solid #334155',
+                      background: '#0f172a',
+                      marginBottom: 10,
+                    }}
+                  >
+                    <img
+                      src={formData.image}
+                      alt="Category Preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'space-between',
+                        padding: 10,
+                      }}
+                    >
+                      <label
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          backdropFilter: 'blur(6px)',
+                          color: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          border: '1px solid rgba(255,255,255,0.3)',
+                        }}
+                      >
+                        <span>🔄 تغيير الصورة</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, image: '' }))}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.8)',
+                          backdropFilter: 'blur(6px)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ❌ إزالة
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '24px 16px',
+                      borderRadius: 14,
+                      border: '2px dashed #475569',
+                      background: '#0f172a',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.2s',
+                      marginBottom: 10,
+                    }}
+                  >
+                    <span style={{ fontSize: 32, marginBottom: 6 }}>🖼️</span>
+                    <span style={{ fontSize: 13, fontWeight: 'bold', color: '#ff6b81' }}>
+                      اضغط هنا لاختيار صورة من جهازك
+                    </span>
+                    <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                      يدعم صور الهاتف والكمبيوتر (JPG, PNG, WebP)
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
+
+                {/* Optional URL manual input */}
                 <input
                   type="url"
-                  placeholder="https://images.unsplash.com/..."
-                  value={formData.image}
+                  placeholder="أو الصق رابط صورة خارجي (اختياري)..."
+                  value={formData.image.startsWith('data:') ? '' : formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: 10,
+                    padding: '8px 12px',
                     borderRadius: 10,
                     background: '#0f172a',
                     border: '1px solid #334155',
-                    color: '#fff',
-                    fontSize: 13,
+                    color: '#94a3b8',
+                    fontSize: 12,
                     fontFamily: 'monospace',
                   }}
                 />
