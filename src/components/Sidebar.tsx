@@ -47,12 +47,18 @@ export default function Sidebar() {
  icon: '🏪',
  href: '/restaurants',
  },
- {
- label: 'تصنيفات المطاعم (Categories)',
- icon: '🏷️',
- href: '/categories',
- badge: 'تحكم',
- },
+  {
+    label: 'تصنيفات المطاعم (Categories)',
+    icon: '🏷️',
+    href: '/categories',
+    badge: 'تحكم',
+  },
+  {
+    label: 'مناطق وأحياء بغداد (Areas)',
+    icon: '📍',
+    href: '/areas',
+    badge: 'فلاتر',
+  },
   {
     label: 'قصص المطاعم (Stories)',
     icon: '📸',

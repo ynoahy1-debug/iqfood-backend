@@ -52,11 +52,23 @@ model Restaurant {
   averageRating Float             @default(0.0)
   viewsCount    Int               @default(0)
   isFrozen      Boolean           @default(false)
+  areaId        String?
+  area          Area?             @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  features      String[]          @default([])
   reviews       Review[]
   savedBy       SavedRestaurant[]
   users         User[]
   stories       RestaurantStory[]
   createdAt     DateTime          @default(now())
+}
+
+model Area {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  city        String       @default("بغداد")
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  restaurants Restaurant[]
 }
 
 model Review {
