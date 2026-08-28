@@ -21,6 +21,7 @@ export default async function RestaurantsPage() {
  phone: r.phone,
  workingHours: r.workingHours,
  averageRating: r.averageRating,
+ viewsCount: r.viewsCount ?? 0,
  isFrozen: (r as any).isFrozen ?? false,
  image: r.image,
  _count: r._count,

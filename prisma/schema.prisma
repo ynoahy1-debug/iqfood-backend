@@ -50,6 +50,7 @@ model Restaurant {
   longitude     Float
   image         String
   averageRating Float             @default(0.0)
+  viewsCount    Int               @default(0)
   isFrozen      Boolean           @default(false)
   reviews       Review[]
   savedBy       SavedRestaurant[]

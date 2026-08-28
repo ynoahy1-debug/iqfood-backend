@@ -11,6 +11,7 @@ interface RestaurantItem {
   phone?: string | null;
   workingHours?: string | null;
   averageRating: number;
+  viewsCount?: number;
   isFrozen: boolean;
   image: string;
   _count?: { reviews: number };
@@ -337,7 +338,7 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
       </div>
 
       {/* Action Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <button
           onClick={() => setShowAddModal(true)}
           style={{
@@ -358,6 +359,35 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
           <span style={{ fontSize: 16 }}>➕</span>
           <span>إضافة مطعم جديد للدليل والخرائط</span>
         </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span
+            style={{
+              background: '#1e293b',
+              border: '1px solid #334155',
+              padding: '8px 16px',
+              borderRadius: 12,
+              fontSize: 13,
+              color: '#38bdf8',
+              fontWeight: 600,
+            }}
+          >
+            إجمالي المشاهدات: <strong style={{ color: '#fff' }}>👁️ {restaurants.reduce((acc, curr) => acc + (curr.viewsCount || 0), 0)}</strong>
+          </span>
+          <span
+            style={{
+              background: '#1e293b',
+              border: '1px solid #334155',
+              padding: '8px 16px',
+              borderRadius: 12,
+              fontSize: 13,
+              color: '#94a3b8',
+              fontWeight: 600,
+            }}
+          >
+            إجمالي المطاعم: <strong style={{ color: '#fff' }}>{restaurants.length}</strong>
+          </span>
+        </div>
       </div>
 
       {/* Add Restaurant Modal */}
@@ -970,6 +1000,7 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
               <th>التصنيف والمدينة</th>
               <th>العنوان والمنطقة</th>
               <th>معدل التقييم</th>
+              <th>المشاهدات 👁️</th>
               <th>حالة المطعم</th>
               <th>إجراءات التحكم والقرارات</th>
             </tr>
@@ -1006,6 +1037,24 @@ export default function RestaurantsManager({ initialRestaurants }: { initialRest
                   >
                     ⭐ {r.averageRating}
                   </button>
+                </td>
+                <td>
+                  <span
+                    style={{
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.25)',
+                      padding: '4px 10px',
+                      borderRadius: 10,
+                      fontWeight: 'bold',
+                      fontSize: 12,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    👁️ {r.viewsCount ?? 0}
+                  </span>
                 </td>
                 <td>
                   {r.isFrozen ? (
