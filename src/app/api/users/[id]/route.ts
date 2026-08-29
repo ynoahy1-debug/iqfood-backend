@@ -62,6 +62,7 @@ export async function GET(
  email: user.email,
  avatar: user.avatar,
  bio: user.bio,
+ city: (user as any).city || 'بغداد',
  instagram: user.instagram ??'',
  isSubscribed: user.isSubscribed ?? false,
  postLimit: user.postLimit ?? 5,
@@ -90,7 +91,7 @@ export async function PATCH(
  try {
  const userId = params.id;
  const body = await request.json();
- const { isSubscribed, postLimit, canPostWithoutApproval, isFrozen, instagram, bio, name, username, avatar } = body;
+ const { isSubscribed, postLimit, canPostWithoutApproval, isFrozen, instagram, bio, name, username, avatar, city } = body;
 
  const dataToUpdate: any = {};
  if (typeof isSubscribed ==='boolean') {
@@ -116,6 +117,9 @@ export async function PATCH(
  }
  if (typeof bio ==='string') {
  dataToUpdate.bio = bio.trim();
+ }
+ if (typeof city === 'string' && city.trim().length > 0) {
+ dataToUpdate.city = city.trim();
  }
  if (typeof name ==='string') {
  dataToUpdate.name = name.trim();
