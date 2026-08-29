@@ -26,6 +26,7 @@ export async function GET() {
         username: u.username,
         email: u.email,
         avatar: u.avatar,
+        city: u.city || 'بغداد',
         isSubscribed: u.isSubscribed ?? false,
         postLimit: u.postLimit ?? 5,
         canPostWithoutApproval: (u as any).canPostWithoutApproval ?? false,

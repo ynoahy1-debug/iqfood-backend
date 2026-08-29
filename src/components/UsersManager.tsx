@@ -13,6 +13,7 @@ interface UserItem {
  isSubscribed: boolean;
  postLimit: number;
  canPostWithoutApproval: boolean;
+ city?: string;
  isFrozen: boolean;
  reviewCount: number;
 }
@@ -92,6 +93,7 @@ export default function UsersManager({ initialUsers }: { initialUsers: UserItem[
  <thead>
  <tr>
  <th>المستخدم</th>
+ <th>المحافظة / المدينة</th>
  <th>اسم المستخدم والإنستغرام</th>
  <th>البريد الإلكتروني</th>
  <th>الزيارات والتقييمات</th>
@@ -105,6 +107,20 @@ export default function UsersManager({ initialUsers }: { initialUsers: UserItem[
  <tr key={u.id} style={{ opacity: u.isFrozen ? 0.6 : 1 }}>
  <td>
  <strong>{u.name}</strong>
+ </td>
+ <td>
+ <span
+ style={{
+ background: 'rgba(14, 165, 233, 0.15)',
+ color: '#38bdf8',
+ padding: '4px 10px',
+ borderRadius: 8,
+ fontSize: 12,
+ fontWeight: 'bold',
+ }}
+ >
+ 🏛️ {u.city || 'بغداد'}
+ </span>
  </td>
  <td>
  @{u.username} • <span style={{ color:'#e1306c' }}> @{u.instagram || u.username}</span>

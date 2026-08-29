@@ -21,6 +21,7 @@ export default async function UsersPage() {
  email: u.email,
  avatar: u.avatar,
  bio: u.bio,
+ city: (u as any).city || 'بغداد',
  instagram: (u as any).instagram ??'ahmed_iq',
  isSubscribed: (u as any).isSubscribed ?? false,
  postLimit: (u as any).postLimit ?? 5,

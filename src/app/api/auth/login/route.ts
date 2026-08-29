@@ -6,7 +6,7 @@ import { prisma } from'@/lib/prisma';
 export async function POST(request: Request) {
  try {
  const body = await request.json();
- const { action, email, username, identifier, password, isGoogle, name, avatar, bio } = body;
+ const { action, email, username, identifier, password, isGoogle, name, avatar, bio, city } = body;
 
  // ACTION 1: Check Google Account Existence
  if (action ==='check-google' || (isGoogle && !name && !password)) {
@@ -86,6 +86,7 @@ export async function POST(request: Request) {
  password: password,
  avatar: avatar ||'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
  bio: bio ||'عاشق لتجربة الأكل العراقي والمطاعم',
+ city: city && typeof city === 'string' && city.trim().length > 0 ? city.trim() : 'بغداد',
  },
  });
 

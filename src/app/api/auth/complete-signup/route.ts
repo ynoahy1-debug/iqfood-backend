@@ -6,7 +6,7 @@ export const dynamic ='force-dynamic';
 export async function POST(request: Request) {
  try {
  const body = await request.json();
- const { name, username, email, password, avatar } = body;
+ const { name, username, email, password, avatar, city } = body;
 
  if (!name || !username || !email || !password) {
  return NextResponse.json(
@@ -59,6 +59,7 @@ export async function POST(request: Request) {
  password: password,
  avatar: avatar && typeof avatar === 'string' && avatar.trim().length > 0 ? avatar.trim() : null,
  bio:'عاشق لتجربة الأكل العراقي والمطاعم',
+ city: city && typeof city === 'string' && city.trim().length > 0 ? city.trim() : 'بغداد',
  },
  });
 
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
  email: newUser.email,
  avatar: newUser.avatar,
  bio: newUser.bio,
+ city: newUser.city,
  instagram: newUser.instagram,
  isSubscribed: newUser.isSubscribed,
  postLimit: newUser.postLimit,

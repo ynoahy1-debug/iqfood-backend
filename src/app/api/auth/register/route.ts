@@ -6,7 +6,7 @@ import { prisma } from'@/lib/prisma';
 export async function POST(request: Request) {
  try {
  const body = await request.json();
- const { name, username, email, password, avatar, bio } = body;
+ const { name, username, email, password, avatar, bio, city } = body;
 
  if (!name || !email || !password) {
  return NextResponse.json(
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
  password: password, // Stored for authentication
  avatar: avatar && typeof avatar === 'string' && avatar.trim().length > 0 ? avatar.trim() : null,
  bio: bio ||'عاشق لتجربة الأكل العراقي والمطاعم',
+ city: city && typeof city === 'string' && city.trim().length > 0 ? city.trim() : 'بغداد',
  },
  });
 
